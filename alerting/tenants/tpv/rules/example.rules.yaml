@@ -1,0 +1,10 @@
+groups:
+- name: tpv-smoke
+  rules:
+  - alert: TPV_AlwaysFiring_Test
+    expr: vector(1)
+    for: 1m
+    labels:
+      severity: warning
+    annotations:
+      summary: "TPV: alerta de prueba (always firing)"

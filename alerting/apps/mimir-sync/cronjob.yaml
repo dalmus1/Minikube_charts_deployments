@@ -1,0 +1,82 @@
+aapiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: mimirtool-sync
+spec:
+  schedule: "*/10 * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: sync-tpv
+              image: grafana/mimirtool:2.16.0
+              imagePullPolicy: IfNotPresent
+              env:
+                - name: MIMIR_ADDRESS
+                  value: "http://mimir-nginx.monitoring.svc.cluster.local"
+                - name: MIMIR_TENANT_ID
+                  value: "tpv"
+              command: ["mimirtool"]
+              args: ["alertmanager","load","--address=$(MIMIR_ADDRESS)","/config/alertmanager.yaml"]
+              volumeMounts:
+                - name: cfg-tpv
+                  mountPath: /config
+                  readOnly: true
+
+            - name: sync-tpv-rules
+              image: grafana/mimirtool:2.16.0
+              imagePullPolicy: IfNotPresent
+              env:
+                - name: MIMIR_ADDRESS
+                  value: "http://mimir-nginx.monitoring.svc.cluster.local"
+                - name: MIMIR_TENANT_ID
+                  value: "tpv"
+              command: ["mimirtool"]
+              args: ["rules","sync","--address=$(MIMIR_ADDRESS)","/config/rules.yaml"]
+              volumeMounts:
+                - name: cfg-tpv
+                  mountPath: /config
+                  readOnly: true
+
+            - name: sync-gke
+              image: grafana/mimirtool:2.16.0
+              imagePullPolicy: IfNotPresent
+              env:
+                - name: MIMIR_ADDRESS
+                  value: "http://mimir-nginx.monitoring.svc.cluster.local"
+                - name: MIMIR_TENANT_ID
+                  value: "gke"
+              command: ["mimirtool"]
+              args: ["alertmanager","load","--address=$(MIMIR_ADDRESS)","/config/alertmanager.yaml"]
+              volumeMounts:
+                - name: cfg-gke
+                  mountPath: /config
+                  readOnly: true
+
+            - name: sync-gke-rules
+              image: grafana/mimirtool:2.16.0
+              imagePullPolicy: IfNotPresent
+              env:
+                - name: MIMIR_ADDRESS
+                  value: "http://mimir-nginx.monitoring.svc.cluster.local"
+                - name: MIMIR_TENANT_ID
+                  value: "gke"
+              command: ["mimirtool"]
+              args: ["rules","sync","--address=$(MIMIR_ADDRESS)","/config/rules.yaml"]
+              volumeMounts:
+                - name: cfg-gke
+                  mountPath: /config
+                  readOnly: true
+
+          volumes:
+            - name: cfg-tpv
+              configMap:
+                name: mimir-sync-tenant-tpv
+            - name: cfg-gke
+              configMap:
+                name: mimir-sync-tenant-gke

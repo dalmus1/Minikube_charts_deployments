@@ -1,0 +1,10 @@
+groups:
+- name: gke-smoke
+  rules:
+  - alert: GKE_AlwaysFiring_Test
+    expr: vector(1)
+    for: 1m
+    labels:
+      severity: warning
+    annotations:
+      summary: "GKE: alerta de prueba (always firing)"
