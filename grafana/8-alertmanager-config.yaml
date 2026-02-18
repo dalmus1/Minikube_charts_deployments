@@ -1,0 +1,185 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: alertmanager-config
+  namespace: monitoring
+data:
+  alertmanager.yml: |
+    global:
+      resolve_timeout: 5m
+      # Slack webhook URL - replace with your actual webhook
+      # slack_api_url: 'YOUR_SLACK_WEBHOOK_URL'
+    
+    # The root route with all parameters, which are inherited by the child routes if they are not overwritten.
+    route:
+      receiver: 'default'
+      group_by: ['alertname', 'cluster', 'service']
+      group_wait: 10s
+      group_interval: 10s
+      repeat_interval: 1h
+      routes:
+        # Critical alerts route
+        - match:
+            severity: critical
+          receiver: 'critical'
+          group_wait: 0s
+          group_interval: 5m
+          repeat_interval: 15m
+        
+        # Warning alerts route
+        - match:
+            severity: warning
+          receiver: 'warning'
+          group_wait: 10s
+          group_interval: 10m
+          repeat_interval: 1h
+    
+    # Inhibition rules to suppress certain alerts
+    inhibit_rules:
+      # Inhibit warning and info alerts if critical alert exists
+      - source_match:
+          severity: 'critical'
+        target_match_re:
+          severity: 'warning|info'
+        equal: ['alertname', 'dev', 'instance']
+    
+    receivers:
+    - name: 'default'
+      # You can add various receivers here
+      # Example: email_configs, slack_configs, pagerduty_configs, etc.
+    
+    - name: 'critical'
+      # Critical alert handlers
+      # Example: Send to PagerDuty, Slack, email
+    
+    - name: 'warning'
+      # Warning alert handlers
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-rules
+  namespace: monitoring
+data:
+  prometheus-rules.yml: |
+    groups:
+    - name: system_alerts
+      interval: 30s
+      rules:
+      # Example alert: High memory usage
+      - alert: HighMemoryUsage
+        expr: |
+          (container_memory_usage_bytes / container_spec_memory_limit_bytes) * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage detected"
+          description: "Memory usage is above 80% for {{ $labels.pod_name }}"
+      
+      # Example alert: Pod restart
+      - alert: PodRestarting
+        expr: |
+          rate(kube_pod_container_status_restarts_total[15m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Pod is restarting"
+          description: "Pod {{ $labels.pod }} has restarted {{ $value }} times in last 15m"
+      
+      # Example alert: Service down
+      - alert: ServiceDown
+        expr: |
+          up{job="prometheus"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service is down"
+          description: "Service {{ $labels.job }} is down for more than 2 minutes"
+      
+      # Example alert: High CPU usage
+      - alert: HighCPUUsage
+        expr: |
+          (rate(container_cpu_usage_seconds_total[5m]) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage detected"
+          description: "CPU usage is above 80% for {{ $labels.pod_name }}"
+      
+      # Example alert: Disk space low
+      - alert: LowDiskSpace
+        expr: |
+          (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes) * 100 < 10
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Low disk space"
+          description: "Disk space is below 10% on {{ $labels.device }}"
+    
+    - name: grafana_alerts
+      interval: 30s
+      rules:
+      - alert: GrafanaDown
+        expr: |
+          up{job="grafana"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Grafana is down"
+          description: "Grafana service is down for more than 2 minutes"
+    
+    - name: mimir_alerts
+      interval: 30s
+      rules:
+      - alert: MimirDown
+        expr: |
+          up{job="mimir"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Mimir is down"
+          description: "Mimir service is down for more than 2 minutes"
+      
+      - alert: MimirHighLatency
+        expr: |
+          histogram_quantile(0.99, rate(mimir_request_duration_seconds_bucket[5m])) > 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Mimir high latency"
+          description: "99th percentile latency is above 1s"
+    
+    - name: loki_alerts
+      interval: 30s
+      rules:
+      - alert: LokiDown
+        expr: |
+          up{job="loki"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Loki is down"
+          description: "Loki service is down for more than 2 minutes"
+    
+    - name: tempo_alerts
+      interval: 30s
+      rules:
+      - alert: TempoDown
+        expr: |
+          up{job="tempo"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Tempo is down"
+          description: "Tempo service is down for more than 2 minutes"

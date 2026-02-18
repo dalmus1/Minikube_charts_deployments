@@ -1,0 +1,79 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mimir
+  namespace: monitoring
+  labels:
+    app: mimir
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mimir
+  template:
+    metadata:
+      labels:
+        app: mimir
+    spec:
+      containers:
+      - name: mimir
+        image: grafana/mimir:latest
+        args:
+          - '-config.file=/etc/mimir/mimir.yaml'
+          - '-target=all'
+        ports:
+        - containerPort: 9009
+          name: http
+        - containerPort: 9096
+          name: grpc
+        volumeMounts:
+        - name: config
+          mountPath: /etc/mimir
+        - name: storage
+          mountPath: /data
+        resources:
+          requests:
+            cpu: 200m
+            memory: 512Mi
+          limits:
+            cpu: 1000m
+            memory: 1Gi
+        livenessProbe:
+          httpGet:
+            path: /ready
+            port: 9009
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 9009
+          initialDelaySeconds: 30
+          periodSeconds: 10
+      volumes:
+      - name: config
+        configMap:
+          name: mimir-config
+      - name: storage
+        persistentVolumeClaim:
+          claimName: mimir-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mimir
+  namespace: monitoring
+spec:
+  selector:
+    app: mimir
+  ports:
+  - port: 9009
+    protocol: TCP
+    targetPort: 9009
+    name: http
+  - port: 9096
+    protocol: TCP
+    targetPort: 9096
+    name: grpc
+  type: LoadBalancer

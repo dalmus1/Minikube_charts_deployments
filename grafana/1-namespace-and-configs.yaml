@@ -1,0 +1,190 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: monitoring
+---
+# Prometheus Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  namespace: monitoring
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 15s
+      evaluation_interval: 15s
+      external_labels:
+        cluster: 'minikube'
+        environment: 'dev'
+    
+    remote_write:
+      - url: http://mimir:9009/api/prom/push
+        queue_config:
+          capacity: 10000
+          max_shards: 200
+          max_samples_per_send: 1000
+    
+    scrape_configs:
+      - job_name: 'prometheus'
+        static_configs:
+          - targets: ['localhost:9090']
+      
+      - job_name: 'mimir'
+        static_configs:
+          - targets: ['mimir:9009']
+      
+      - job_name: 'loki'
+        static_configs:
+          - targets: ['loki:3100']
+      
+      - job_name: 'tempo'
+        static_configs:
+          - targets: ['tempo:3200']
+      
+      - job_name: 'grafana'
+        static_configs:
+          - targets: ['grafana:3000']
+---
+# Loki Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: loki-config
+  namespace: monitoring
+data:
+  loki.yml: |
+    auth_enabled: false
+    common:
+      path_prefix: /loki
+      replication_factor: 1
+      ring:
+        kvstore:
+          store: inmemory
+    
+    ingester:
+      chunk_idle_period: 3m
+      chunk_retain_period: 1m
+      chunk_encoding: snappy
+    
+    limits_config:
+      allow_structured_metadata: false
+      reject_old_samples: true
+      reject_old_samples_max_age: 168h
+    
+    schema_config:
+      configs:
+        - from: 2020-10-24
+          store: boltdb-shipper
+          object_store: filesystem
+          schema: v11
+          index:
+            prefix: index_
+            period: 24h
+    
+    server:
+      http_listen_port: 3100
+      grpc_listen_port: 9096
+    
+    storage_config:
+      boltdb_shipper:
+        active_index_directory: /loki/boltdb-shipper-active
+        cache_location: /loki/boltdb-shipper-cache
+      filesystem:
+        directory: /loki/chunks
+    
+    table_manager:
+      retention_deletes_enabled: false
+      retention_period: 0s
+---
+# Tempo Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tempo-config
+  namespace: monitoring
+data:
+  tempo.yml: |
+    server:
+      http_listen_port: 3200
+      grpc_listen_port: 9096
+    
+    distributor:
+      receivers:
+        otlp:
+          protocols:
+            grpc:
+              endpoint: 0.0.0.0:4317
+            http:
+              endpoint: 0.0.0.0:4318
+        jaeger:
+          protocols:
+            grpc:
+              endpoint: 0.0.0.0:14250
+            thrift_http:
+              endpoint: 0.0.0.0:14268
+    
+    ingester:
+      trace_idle_period: 10s
+      max_block_bytes: 1_000_000
+      max_block_duration: 5m
+    
+    storage:
+      trace:
+        backend: local
+        local:
+          path: /var/tempo/traces
+        wal:
+          path: /var/tempo/wal
+---
+# Mimir Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mimir-config
+  namespace: monitoring
+data:
+  mimir.yaml: |
+    target: all
+    
+    server:
+      http_listen_port: 9009
+      grpc_listen_port: 9096
+    
+    common:
+      storage:
+        backend: filesystem
+        filesystem:
+          dir: /data
+    
+    blocks_storage:
+      filesystem:
+        dir: /data/blocks
+      tsdb:
+        dir: /data/tsdb
+    
+    compactor:
+      data_dir: /data/compactor
+      sharding_ring:
+        kvstore:
+          store: memberlist
+    
+    distributor:
+      ring:
+        kvstore:
+          store: memberlist
+    
+    ingester:
+      ring:
+        kvstore:
+          store: memberlist
+    
+    ruler_storage:
+      filesystem:
+        dir: /data/ruler
+    
+    store_gateway:
+      sharding_ring:
+        kvstore:
+          store: memberlist
