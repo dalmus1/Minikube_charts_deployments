@@ -6,12 +6,12 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://gitlab.com/clarel.eu/api/gitops.git
-    targetRevision: nonproduction
-    path: nonproduction/alerting/apps/mimir-sync
+    repoURL: https://github.com/dalmus1/Minikube_charts_deployments 
+    targetRevision: main
+    path: alerting/apps/mimir-sync
   destination:
     server: https://kubernetes.default.svc
-    namespace: monitoring
+    namespace: alerting   
   syncPolicy:
     automated:
       prune: true
