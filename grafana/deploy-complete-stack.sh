@@ -12,7 +12,7 @@ echo -e "${BLUE}========================================${NC}"
 echo ""
 
 # Step 1: Set kubectl to minikube
-kubectl config use-context minikube
+kubectl config use-context miniubuntuk8s
 
 # Step 2: Create namespace and configs
 echo -e "${BLUE}[2/6] Creating namespace and configurations...${NC}"
