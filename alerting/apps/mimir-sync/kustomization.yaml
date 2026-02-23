@@ -9,13 +9,13 @@ resources:
 configMapGenerator:
   - name: mimir-sync-tenant-tpv
     files:
-      - alertmanager.yaml=../../tenants/tpv/alertmanager/config.yaml
-      - rules.yaml=../../tenants/tpv/rules/example.rules.yaml
+      - alertmanager.yaml=tenants/tpv/alertmanager/config.yaml
+      - rules.yaml=tenants/tpv/rules/example.rules.yaml
 
   - name: mimir-sync-tenant-gke
     files:
-      - alertmanager.yaml=../../tenants/gke/alertmanager/config.yaml
-      - rules.yaml=../../tenants/gke/rules/example.rules.yaml
+      - alertmanager.yaml=tenants/gke/alertmanager/config.yaml
+      - rules.yaml=tenants/gke/rules/example.rules.yaml
 
 generatorOptions:
   disableNameSuffixHash: true
