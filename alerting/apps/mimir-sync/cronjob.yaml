@@ -18,7 +18,7 @@ spec:
               imagePullPolicy: IfNotPresent
               env:
                 - name: MIMIR_ADDRESS
-                  value: "http://mimir-nginx.monitoring.svc.cluster.local"
+                  value: "http://mimir.monitoring.svc.cluster.local:9009"
                 - name: MIMIR_TENANT_ID
                   value: "tpv"
               command: ["mimirtool"]
@@ -33,7 +33,7 @@ spec:
               imagePullPolicy: IfNotPresent
               env:
                 - name: MIMIR_ADDRESS
-                  value: "http://mimir-nginx.monitoring.svc.cluster.local"
+                  value: "http://mimir.monitoring.svc.cluster.local:9009"
                 - name: MIMIR_TENANT_ID
                   value: "tpv"
               command: ["mimirtool"]
@@ -48,7 +48,7 @@ spec:
               imagePullPolicy: IfNotPresent
               env:
                 - name: MIMIR_ADDRESS
-                  value: "http://mimir-nginx.monitoring.svc.cluster.local"
+                  value: "http://mimir.monitoring.svc.cluster.local:9009"
                 - name: MIMIR_TENANT_ID
                   value: "gke"
               command: ["mimirtool"]
@@ -63,7 +63,7 @@ spec:
               imagePullPolicy: IfNotPresent
               env:
                 - name: MIMIR_ADDRESS
-                  value: "http://mimir-nginx.monitoring.svc.cluster.local"
+                  value: "http://mimir.monitoring.svc.cluster.local:9009"
                 - name: MIMIR_TENANT_ID
                   value: "gke"
               command: ["mimirtool"]
