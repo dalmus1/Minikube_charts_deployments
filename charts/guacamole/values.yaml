@@ -1,0 +1,69 @@
+images:
+  guacd:
+    repository: guacamole/guacd
+    tag: "1.6.0"
+  guacamole:
+    repository: guacamole/guacamole
+    tag: "1.6.0"
+
+externalPostgres:
+  host: "pg-postgresql.db.svc.cluster.local"
+  port: 5432
+  db: "guacamole_db"
+  user: "guacamole_user"
+  existingSecret:
+    name: "pg-postgresql"
+    key: "password"
+
+guacd:
+  replicaCount: 1
+
+guacamole:
+  replicaCount: 1
+  env:
+    guacdPort: 4822
+    guacdSsl: "false"
+
+service:
+  guacamole:
+    port: 8080
+  guacd:
+    port: 4822
+
+ingress:
+  enabled: true
+  className: "nginx"
+  host: guacamole.local
+  path: /guacamole
+  pathType: Prefix
+
+  annotations: []
+
+  tls:
+    enabled: false
+    secretName: guacamole-tls
+
+certManager:
+  enabled: false
+  issuerRef:
+    kind: ClusterIssuer
+    name: ""
+  dnsNames: []
+
+externalSecrets:
+  enabled: false
+  store:
+    kind: ClusterSecretStore
+    name: ""
+  remoteKey: ""
+  refreshInterval: "1h"
+
+openid:
+  enable: false
+  endpoint: "" 
+  jwks_endpoint: ""
+  issuer: "" 
+  client_id: ""
+  redirect_uri: ""
+  extension_priority: "*, openid"  
+  

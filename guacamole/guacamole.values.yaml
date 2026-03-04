@@ -1,0 +1,64 @@
+externalPostgres:
+  host: "10.116.17.7"
+  port: 5432
+  db: "guacamole"
+  user: "guacamole"
+  existingSecret:
+    name: "guacamole"
+    key: "database-password"
+
+guacd:
+  replicaCount: 1
+
+guacamole:
+  replicaCount: 1
+  env:
+    guacdPort: 4822
+    guacdSsl: "false"
+
+service:
+  guacamole:
+    port: 8080
+  guacd:
+    port: 4822
+
+ingress:
+  enabled: true
+  className: "nginx-internal"
+  host: guacamole.n.clarel.eu
+  path: /guacamole
+  pathType: Prefix
+
+  annotations:
+    cert-manager.io/cluster-issuer: google-n-clarel-eu
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+
+  tls:
+    enabled: true
+    secretName: guacamole-tls
+
+certManager:
+  enabled: true
+  issuerRef:
+    kind: ClusterIssuer
+    name: google-n-clarel-eu
+  dnsNames:
+    - guacamole.n.clarel.eu
+
+externalSecrets:
+  enabled: true
+  store:
+    kind: ClusterSecretStore
+    name: gcp-store
+  remoteKey: guacamole-database-password
+  refreshInterval: 1h
+
+openid:
+  enable: true
+  endpoint: "https://authentik.local" 
+  jwks_endpoint: "https://authentik.local/jwks"
+  issuer: "iauthentik" 
+  client_id: "id_cliente_falso"
+  redirect_uri: "https://authentik.local/returngaucamole"
+  extension_priority: "*, openid"  

@@ -1,0 +1,73 @@
+{{- include "guacamole.validate" . -}}
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "guacamole.fullname" . }}-guacamole
+  labels:
+    {{- include "guacamole.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.guacamole.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: guacamole
+      {{- include "guacamole.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: guacamole
+        {{- include "guacamole.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: guacamole
+          image: "{{ .Values.images.guacamole.repository }}:{{ .Values.images.guacamole.tag }}"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            - name: GUACD_HOSTNAME
+              value: "guacd"
+            - name: GUACD_PORT
+              value: {{ .Values.guacamole.env.guacdPort | quote }}
+            - name: GUACD_SSL
+              value: {{ .Values.guacamole.env.guacdSsl | quote }}
+            - name: POSTGRESQL_HOSTNAME
+              value: {{ .Values.externalPostgres.host | quote }}
+            - name: POSTGRESQL_PORT
+              value: {{ .Values.externalPostgres.port | quote }}
+            - name: POSTGRESQL_DATABASE
+              value: {{ .Values.externalPostgres.db | quote }}
+            - name: POSTGRESQL_USERNAME
+              value: {{ .Values.externalPostgres.user | quote }}
+            - name: POSTGRESQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.externalPostgres.existingSecret.name | quote }}
+                  key: {{ .Values.externalPostgres.existingSecret.key | quote }}
+            {{- if .Values.openid.enable }}
+            {{- with .Values.openid }}
+              - name: OPENID_ENABLED
+                value: "true"
+              - name: OPENID_AUTHORIZATION_ENDPOINT
+                value: {{ .endpoint | quote }}
+              - name: OPENID_JWKS_ENDPOINT
+                value: {{ .jwks_endpoint | quote }}
+              - name: OPENID_ISSUER
+                value: {{ .issuer | quote }}
+              - name: OPENID_CLIENT_ID
+                value: {{ .client_id | quote }}
+              - name: OPENID_REDIRECT_URI
+                value: {{ .redirect_uri | quote }}
+              - name: EXTENSION_PRIORITY
+                value: {{ .extension_priority | quote }}
+            {{- end }}
+          {{- end }}
+          readinessProbe:
+            httpGet:
+              path: /guacamole/
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 6

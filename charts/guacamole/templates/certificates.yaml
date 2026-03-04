@@ -1,0 +1,15 @@
+{{- if .Values.certManager.enabled }}
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ include "guacamole.fullname" . }}-tls
+spec:
+  secretName: {{ .Values.ingress.tls.secretName }}
+  issuerRef:
+    kind: {{ .Values.certManager.issuerRef.kind }}
+    name: {{ .Values.certManager.issuerRef.name }}
+  dnsNames:
+    {{- range .Values.certManager.dnsNames }}
+    - {{ . | quote }}
+    {{- end }}
+{{- end }}
