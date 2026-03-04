@@ -1,0 +1,64 @@
+./postgres_deploy.sh 
+namespace/db created
+"bitnami" has been added to your repositories
+Hang tight while we grab the latest from your chart repositories...
+...Successfully got an update from the "argocd" chart repository
+...Successfully got an update from the "bitnami" chart repository
+Update Complete. ⎈Happy Helming!⎈
+NAME: pg
+LAST DEPLOYED: Wed Mar  4 10:26:55 2026
+NAMESPACE: db
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+NOTES:
+CHART NAME: postgresql
+CHART VERSION: 18.5.1
+APP VERSION: 18.3.0
+
+⚠ WARNING: Since August 28th, 2025, only a limited subset of images/charts are available for free.
+    Subscribe to Bitnami Secure Images to receive continued support and security updates.
+    More info at https://bitnami.com and https://github.com/bitnami/containers/issues/83267
+
+** Please be patient while the chart is being deployed **
+
+PostgreSQL can be accessed via port 5432 on the following DNS names from within your cluster:
+
+    pg-postgresql.db.svc.cluster.local - Read/Write connection
+
+To get the password for "postgres" run:
+
+    export POSTGRES_ADMIN_PASSWORD=$(kubectl get secret --namespace db pg-postgresql -o jsonpath="{.data.postgres-password}" | base64 -d)
+
+To get the password for "guacamole" run:
+
+    export POSTGRES_PASSWORD=$(kubectl get secret --namespace db pg-postgresql -o jsonpath="{.data.password}" | base64 -d)
+
+To connect to your database run the following command:
+
+    kubectl run pg-postgresql-client --rm --tty -i --restart='Never' --namespace db --image registry-1.docker.io/bitnami/postgresql:latest --env="PGPASSWORD=$POSTGRES_PASSWORD" \
+      --command -- psql --host pg-postgresql -U guacamole -d guacamole -p 5432
+
+    > NOTE: If you access the container using bash, make sure that you execute "/opt/bitnami/scripts/postgresql/entrypoint.sh /bin/bash" in order to avoid the error "psql: local user with ID 1001} does not exist"
+
+To connect to your database from outside the cluster execute the following commands:
+
+    kubectl port-forward --namespace db svc/pg-postgresql 5432:5432 &
+    PGPASSWORD="$POSTGRES_PASSWORD" psql --host 127.0.0.1 -U guacamole -d guacamole -p 5432
+
+WARNING: The configured password will be ignored on new installation in case when previous PostgreSQL release was deleted through the helm command. In that case, old PVC will have an old password, and setting it through helm won't take effect. Deleting persistent volumes (PVs) will solve the issue.
+WARNING: Rolling tag detected (bitnami/postgresql:latest), please note that it is strongly recommended to avoid using rolling tags in a production environment.
++info https://techdocs.broadcom.com/us/en/vmware-tanzu/bitnami-secure-images/bitnami-secure-images/services/bsi-doc/apps-tutorials-understand-rolling-tags-containers-index.html
+WARNING: Rolling tag detected (bitnami/os-shell:latest), please note that it is strongly recommended to avoid using rolling tags in a production environment.
++info https://techdocs.broadcom.com/us/en/vmware-tanzu/bitnami-secure-images/bitnami-secure-images/services/bsi-doc/apps-tutorials-understand-rolling-tags-containers-index.html
+
+WARNING: There are "resources" sections in the chart not set. Using "resourcesPreset" is not recommended for production. For production installations, please set the following values according to your workload needs:
+  - primary.resources
+  - readReplicas.resources
++info https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+
+
+kubectl -n db get svc pg-postgresql
+NAME            TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
+pg-postgresql   ClusterIP   10.108.137.15   <none>        5432/TCP   8m26s
+
