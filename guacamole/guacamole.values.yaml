@@ -1,5 +1,5 @@
 externalPostgres:
-  host: "10.108.137.15"
+  host: "pg-postgresql.db.svc.cluster.local"
   port: 5432
   db: "guacamole"
   user: "guacamole"
@@ -29,14 +29,22 @@ ingress:
   path: /guacamole
   pathType: Prefix
 
-  annotations: {}
+  annotations: 
+    cert-manager.io/cluster-issuer: lab-selfsigned
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
 
   tls:
     enabled: false
     secretName: ""
 
 certManager:
-  enabled: false
+  enabled: true
+  issuerRef:
+    kind: ClusterIssuer
+    name: lab-selfsigned
+  dnsNames:
+    - guacamole.local
 
 externalSecrets:
   enabled: false
