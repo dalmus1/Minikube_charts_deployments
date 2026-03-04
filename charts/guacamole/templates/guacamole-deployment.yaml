@@ -47,22 +47,22 @@ spec:
                   key: {{ .Values.externalPostgres.existingSecret.key | quote }}
             {{- if .Values.openid.enable }}
             {{- with .Values.openid }}
-              - name: OPENID_ENABLED
-                value: "true"
-              - name: OPENID_AUTHORIZATION_ENDPOINT
-                value: {{ .endpoint | quote }}
-              - name: OPENID_JWKS_ENDPOINT
-                value: {{ .jwks_endpoint | quote }}
-              - name: OPENID_ISSUER
-                value: {{ .issuer | quote }}
-              - name: OPENID_CLIENT_ID
-                value: {{ .client_id | quote }}
-              - name: OPENID_REDIRECT_URI
-                value: {{ .redirect_uri | quote }}
-              - name: EXTENSION_PRIORITY
-                value: {{ .extension_priority | quote }}
+            - name: OPENID_ENABLED
+              value: "true"
+            - name: OPENID_AUTHORIZATION_ENDPOINT
+              value: {{ .endpoint | quote }}
+            - name: OPENID_JWKS_ENDPOINT
+              value: {{ .jwks_endpoint | quote }}
+            - name: OPENID_ISSUER
+              value: {{ .issuer | quote }}
+            - name: OPENID_CLIENT_ID
+              value: {{ .client_id | quote }}
+            - name: OPENID_REDIRECT_URI
+              value: {{ .redirect_uri | quote }}
+            - name: EXTENSION_PRIORITY
+              value: {{ .extension_priority | quote }}
             {{- end }}
-          {{- end }}
+            {{- end }}
           readinessProbe:
             httpGet:
               path: /guacamole/

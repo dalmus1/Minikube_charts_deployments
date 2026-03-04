@@ -31,17 +31,17 @@ service:
     port: 4822
 
 ingress:
-  enabled: true
-  className: "nginx"
-  host: guacamole.local
-  path: /guacamole
+  enabled: false
+  className: ""
+  host: ""
+  path: /
   pathType: Prefix
 
-  annotations: []
+  annotations: {}
 
   tls:
     enabled: false
-    secretName: guacamole-tls
+    secretName: ""
 
 certManager:
   enabled: false

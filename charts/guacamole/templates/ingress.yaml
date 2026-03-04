@@ -5,10 +5,12 @@ metadata:
   name: {{ include "guacamole.fullname" . }}
   labels:
     {{- include "guacamole.labels" . | nindent 4 }}
-  {{- with .Values.ingress.annotations }}
   annotations:
-    {{- toYaml . | nindent 4 }}
-  {{- end }}
+    {{- /*
+        Siempre renderizamos annotations como mapa.
+        Si no hay annotations, usamos dict vacío.
+    */ -}}
+    {{- toYaml (default dict .Values.ingress.annotations) | nindent 4 }}
 spec:
   {{- if .Values.ingress.className }}
   ingressClassName: {{ .Values.ingress.className | quote }}
