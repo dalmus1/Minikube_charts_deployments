@@ -45,8 +45,8 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.externalPostgres.existingSecret.name | quote }}
                   key: {{ .Values.externalPostgres.existingSecret.key | quote }}
-            {{- if .Values.openid.enable }}
-            {{- with .Values.openid }}
+            {{ if .Values.openid.enable }}
+            {{ with .Values.openid }}
             - name: OPENID_ENABLED
               value: "true"
             - name: OPENID_AUTHORIZATION_ENDPOINT
@@ -61,8 +61,8 @@ spec:
               value: {{ .redirect_uri | quote }}
             - name: EXTENSION_PRIORITY
               value: {{ .extension_priority | quote }}
-            {{- end }}
-            {{- end }}
+            {{ end }}
+            {{ end }}
           readinessProbe:
             httpGet:
               path: /guacamole/
