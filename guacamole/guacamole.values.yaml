@@ -50,7 +50,7 @@ externalSecrets:
   enabled: false
 
 openid:
-  enable: false
+  enable: true
   endpoint: "https://authentik.local" 
   jwks_endpoint: "https://authentik.local/jwks"
   issuer: "iauthentik" 
