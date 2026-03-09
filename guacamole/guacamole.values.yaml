@@ -47,7 +47,18 @@ certManager:
     - guacamole.local
 
 externalSecrets:
-  enabled: false
+  enabled: true
+  refreshInterval: "4h"
+  secretStoreRef:
+    kind: ClusterSecretStore
+    name: "secreto"
+  target: 
+    name: "guacamole"
+    creationPolicy: Owner
+    deletionPolicy: Retain
+    type: "Opaque"
+  dataFrom:
+    remoteKey: ""
 
 openid:
   enable: true

@@ -43,10 +43,10 @@ spec:
             - name: POSTGRESQL_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.externalSecrets.target.name | quote }}
-                  key: "database-password"
-            {{- if .Values.openid.enable }}
-            {{- with .Values.openid }}
+                  name: {{ .Values.externalPostgres.existingSecret.name | quote }}
+                  key: {{ .Values.externalPostgres.existingSecret.key | quote }}
+            {{ if .Values.openid.enable }}
+            {{ with .Values.openid }}
             - name: OPENID_ENABLED
               value: "true"
             - name: OPENID_AUTHORIZATION_ENDPOINT
@@ -55,17 +55,14 @@ spec:
               value: {{ .jwks_endpoint | quote }}
             - name: OPENID_ISSUER
               value: {{ .issuer | quote }}
+            - name: OPENID_CLIENT_ID
+              value: {{ .client_id | quote }}
             - name: OPENID_REDIRECT_URI
               value: {{ .redirect_uri | quote }}
             - name: EXTENSION_PRIORITY
               value: {{ .extension_priority | quote }}
-            {{- end }}
-            - name: OPENID_CLIENT_ID
-              valueFrom: 
-                secretKeyref:
-                  name: {{ .Values.externalSecrets.target.name | quote }}
-                  key: "openid-client-id"
-            {{- end }}
+            {{ end }}
+            {{ end }}
           readinessProbe:
             httpGet:
               path: /guacamole/

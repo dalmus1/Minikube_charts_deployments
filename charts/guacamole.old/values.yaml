@@ -12,8 +12,8 @@ externalPostgres:
   db: "guacamole_db"
   user: "guacamole_user"
   existingSecret:
-    name: "guacamole"
-    key: "database-password"
+    name: "pg-postgresql"
+    key: "password"
 
 guacd:
   replicaCount: 1
@@ -31,37 +31,39 @@ service:
     port: 4822
 
 ingress:
-  enabled: true
-  className: "nginx"
-  host: guacamole.local
-  path: /guacamole
+  enabled: false
+  className: ""
+  host: ""
+  path: /
   pathType: Prefix
 
   annotations: {}
 
   tls:
-    enabled: true
-    secretName: guacamole-tls
+    enabled: false
+    secretName: ""
+
+certManager:
+  enabled: false
+  issuerRef:
+    kind: ClusterIssuer
+    name: ""
+  dnsNames: []
 
 externalSecrets:
   enabled: false
-  refreshInterval: "4h"
-  secretStoreRef:
+  store:
     kind: ClusterSecretStore
     name: ""
-  target: 
-    name: "guacamole"
-    creationPolicy: Owner
-    deletionPolicy: Retain
-    type: "Opaque"
-  dataFrom:
-    remoteKey: ""
+  remoteKey: ""
+  refreshInterval: "1h"
 
 openid:
   enable: false
   endpoint: "" 
   jwks_endpoint: ""
   issuer: "" 
+  client_id: ""
   redirect_uri: ""
   extension_priority: "*, openid"  
   

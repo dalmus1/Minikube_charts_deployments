@@ -26,11 +26,11 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 
 {{- define "guacamole.validate" -}}
 {{- if .Values.externalSecrets.enabled -}}
-{{- if not .Values.externalSecrets.secretStoreRef.name -}}
-{{- fail "externalSecrets.enabled=true pero externalSecrets.secretStoreRef.name está vacío" -}}
+{{- if not .Values.externalSecrets.store.name -}}
+{{- fail "externalSecrets.enabled=true pero externalSecrets.store.name está vacío" -}}
 {{- end -}}
-{{- if not .Values.externalSecrets.dataFrom.remoteKey -}}
-{{- fail "externalSecrets.enabled=true pero externalSecrets.dataFrom.remoteKey está vacío" -}}
+{{- if not .Values.externalSecrets.remoteKey -}}
+{{- fail "externalSecrets.enabled=true pero externalSecrets.remoteKey está vacío" -}}
 {{- end -}}
 {{- end -}}
 
